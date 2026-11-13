@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>شهادة شكر وتقدير</title>
+<style>
+body {
+  font-family: Tahoma, Arial;
+  background: #f3eee2;
+  text-align: center;
+  padding: 20px;
+}
+.container {
+  max-width: 950px;
+  margin: auto;
+  background: white;
+  padding: 20px;
+  border-radius: 15px;
+}
+h2 { color: #075c35; }
+input {
+  width: 85%;
+  max-width: 450px;
+  padding: 14px;
+  font-size: 18px;
+  text-align: center;
+  border: 1px solid #aaa;
+  border-radius: 8px;
+}
+button {
+  padding: 13px 20px;
+  margin: 10px 5px;
+  border: 0;
+  border-radius: 8px;
+  background: #075c35;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+#result { display: none; margin-top: 20px; }
+.preview { position: relative; }
+.preview img { width: 100%; display: block; }
+#namePreview {
+  position: absolute;
+  left: 33.3%;
+  top: 84.1%;
+  width: 38%;
+  height: 8.7%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(10px, 2.25vw, 27px);
+  font-weight: bold;
+  color: #21190f;
+  white-space: nowrap;
+  overflow: hidden;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<h2>شهادة شكر وتقدير</h2>
+<p>اكتب اسمك للحصول على شهادة شكر وتقدير خاصة بك</p>
+
+<input id="personName"
+placeholder="اكتب اسمك بالكامل هنا"
+maxlength="48">
+
+<br>
+
+<button onclick="showCertificate()">عرض الشهادة</button>
+
+<div id="result">
+  <h3>شهادتك جاهزة ❤️</h3>
+
+  <div class="preview">
+    <img id="certificate" src="certificate.jpg"
+    alt="شهادة شكر وتقدير">
+    <div id="namePreview"></div>
+  </div>
+
+  <button onclick="downloadCertificate()">تحميل الشهادة PNG</button>
+  <button onclick="printCertificate()">طباعة الشهادة</button>
+</div>
+
+</div>
+
+<script>
+const input = document.getElementById("personName");
+const result = document.getElementById("result");
+const img = document.getElementById("certificate");
+const namePreview = document.getElementById("namePreview");
+
+function showCertificate() {
+  const name = input.value.trim();
+
+  if (!name) {
+    alert("من فضلك اكتب اسمك أولاً");
+    return;
+  }
+
+  if (!img.complete || !img.naturalWidth) {
+    alert("صورة الشهادة لم يتم تحميلها");
+    return;
+  }
+
+  namePreview.textContent = name;
+  result.style.display = "block";
+  result.scrollIntoView({behavior: "smooth"});
+}
+
+function makeCertificate() {
+  const canvas = document.createElement("canvas");
+  canvas.width = img.naturalWidth;
+  canvas.height = img.naturalHeight;
+
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(img, 0, 0);
+
+  const name = input.value.trim();
+  const maxWidth = canvas.width * 0.36;
+  let size = 46;
+
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.direction = "rtl";
+  ctx.fillStyle = "#21190f";
+  ctx.font = "bold " + size + "px Tahoma";
+
+  while (ctx.measureText(name).width > maxWidth && size > 18) {
+    size--;
+    ctx.font = "bold " + size + "px Tahoma";
+  }
+
+  ctx.fillText(name, canvas.width * 0.523,
+  canvas.height * 0.868, maxWidth);
+
+  return canvas;
+}
+
+function downloadCertificate() {
+  const canvas = makeCertificate();
+  const link = document.createElement("a");
+  link.download = "شهادة-شكر-وتقدير.png";
+  link.href = canvas.toDataURL("image/png");
+  link.click();
+}
+
+function printCertificate() {
+  const canvas = makeCertificate();
+  const win = window.open("", "_blank");
+
+  if (!win) {
+    alert("يرجى السماح بفتح النوافذ المنبثقة");
+    return;
+  }
+
+  win.document.write(`
+    <html><head><title>طباعة الشهادة</title>
+    <style>
+      @page { size: A4 landscape; margin: 0; }
+      body { margin: 0; }
+      img { width: 100%; height: 100vh; object-fit: contain; }
+    </style></head>
+    <body>
+    <img src="${canvas.toDataURL("image/png")}">
+    <script>
+      window.onload = function(){ window.print(); };
+    <\/script>
+    </body></html>
+  `);
+
+  win.document.close();
+}
+</script>
+
+</body>
+</html>
